@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body style='margin: 0; overflow: hidden;'>
+
+	<script src='./lib/three.min.js'></script>
+	<script src='./lib/OutlineEffect.js'></script>
+	<script src='./lib/GLTFLoader.js'></script>
+
+
+	<script>
+		
+		let camera, scene, renderer, controls;
+		let clock, mixer;
+		let timer = performance.now();
+		const interval = 1000 / 30;
+		let width = window.innerWidth, height = window.innerHeight;
+		let cat;
+
+		init();
+
+		function init() {
+			clock = new THREE.Clock();
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0xefefef );
+
+			renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize(width, height);
+			document.body.appendChild(renderer.domElement);
+			renderer.domElement.id = 'three';
+
+			effect = new THREE.OutlineEffect(renderer, {
+				defaultThickness: 0.005,
+				defaultColor: new THREE.Color( 0x000000 ).toArray()
+			});
+
+			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
+			camera.position.z = -2;
+			camera.position.y = 1;
+			camera.lookAt(0, 0, 0);
+
+			const loadingManager = new THREE.LoadingManager();
+			loadingManager.onLoad = function() {
+				requestAnimationFrame( animate );
+			};
+
+			const loader = new THREE.GLTFLoader( loadingManager );
+			loader.load("models/01.gltf", gltf => {
+				cat = gltf.scene;
+				cat.rotation.y = Math.PI;
+				scene.add(cat);
+			});
+		}
+
+		function animate() {
+			requestAnimationFrame( animate );
+			if (performance.now() > interval + timer) {
+				timer = performance.now();
+				effect.render(scene, camera);
+				// renderer.render(scene, camera);
+			}
+		}
+
+	</script>
+	
+</body>
+</html>

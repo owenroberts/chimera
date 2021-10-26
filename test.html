@@ -1,0 +1,104 @@
+<html>
+<head>
+	<title>chimera test</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+	<link rel="stylesheet" href="style.css">
+	<style>
+		.desktop canvas {
+			transform: unset;
+		}
+	</style>
+</head>
+<body>
+	<!-- <video id="video" autoplay playsinline></video> -->
+	<img id="source" src="test/windows_source.png" alt="" style="display:none">
+
+<script src="./lib/artoolkit.min.js"></script>
+<script src="./lib/three.min.js"></script>
+<script src="./lib/artoolkit.three.js"></script>
+<script src='./lib/GLTFLoader.js'></script>
+<script src='./lib/three-clone-gltf.js'></script>
+
+<script src='./lib/OutlineEffect.js'></script>
+<script src='./js/scene.js'></script>
+<script>
+
+/* setup art scene */
+const config = {
+	maxARVideoSize: 640,
+	cameraParam: './lib/camera_para.dat',
+};
+
+const source = document.getElementById('source');
+const sourceTexture = new THREE.Texture(source);
+const markers = {};
+
+const sourcePlane = new THREE.Mesh(
+	new THREE.PlaneBufferGeometry(2, 2),
+	new THREE.MeshBasicMaterial({ map: sourceTexture, side: THREE.DoubleSide })
+);
+sourcePlane.material.depthTest = false;
+sourcePlane.material.depthWrite = false;
+
+var videoCamera = new THREE.OrthographicCamera(-1, 1, -1, 1, -1, 1);
+var videoScene = new THREE.Scene();
+videoScene.add(sourcePlane);
+videoScene.add(videoCamera);
+
+let arController, scene, camera;
+
+const cameraParam = new ARCameraParam(
+	'./lib/camera_para-iPhone 5 rear 640x480 1.0m.dat',
+	function() {
+		arController = new ARController(source, cameraParam);
+		arController.setPatternDetectionMode(artoolkit.AR_TEMPLATE_MATCHING_MONO_AND_MATRIX);
+		init();
+	},
+	function(err) {
+		console.log(err);
+	}
+);
+
+function init() {
+	scene = new THREE.Scene();
+	camera = new THREE.Camera();
+	camera.matrixAutoUpdate = false;
+	setProjectionMatrix(camera.projectionMatrix, arController.getCameraMatrix());
+	scene.add(camera);
+	let ar = new ARScene({ scene: scene, camera: camera }, arController, render);
+
+}
+
+function process() {
+	for (var i in markers) {
+		markers[i].visible = false;
+	}
+	arController.process(source);
+}
+
+function render(time, renderer) {
+	if (!renderer) return;
+	process();
+
+	sourceTexture.needsUpdate = true;
+
+	var ac = renderer.autoClear;
+	renderer.autoClear = false;
+	renderer.clear();
+	renderer.render(videoScene, videoCamera);
+	renderer.render(scene, camera);
+	renderer.autoClear = ac;
+}
+
+var setProjectionMatrix = function(projectionMatrix, value) {
+	if (typeof projectionMatrix.elements.set === "function") {
+		projectionMatrix.elements.set(value);
+	} else {
+		projectionMatrix.elements = [].slice.call(value);
+	}
+};
+
+</script>
+
+</body>
+</html>

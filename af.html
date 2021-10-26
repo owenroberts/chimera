@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>aframe chimera</title>
+	<script src="lib/aframe.min.js"></script>
+	<script src="lib/aframe-ar.js"></script>
+	<script src="lib/aframe-extras.loaders.min.js"></script>
+	<!-- <script src="lib/aframe-outline.min.js"></script> -->
+
+	<script src="lib/EffectComposer.js"></script>
+	<script src="lib/RenderPass.js"></script>
+	<script src="lib/ShaderPass.js"></script>
+	<script src="lib/CopyShader.js"></script>
+	<script src="lib/SimplexNoise.js"></script>
+	<script src="lib/SSAOShader.js"></script>
+	<script src="lib/SSAOPass.js"></script>
+
+</head>
+
+<body style='margin : 0px; overflow: hidden;'>
+
+	<a-scene
+		ssao
+		vr-mode-ui="enabled: false"
+		embedded 
+		arjs='sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3'
+	>
+
+		<a-assets>
+			<a-asset-item id="scene-01" src="models/01.gltf"></a-asset-item>
+		</a-assets>
+
+		<a-marker type='barcode' value='1'>
+			<a-entity
+				id="scene-01"
+				gltf-model="#scene-01"
+				position="0 0 0"
+				rotation="-90 0 0"
+				
+			>
+			<!-- animation-mixer -->
+			</a-entity>
+		</a-marker>
+
+
+		<a-entity camera></a-entity>
+	</a-scene>
+
+	<script>
+		AFRAME.registerComponent('ssao', {
+			schema: {
+				enabled: { default: true },
+				output: { default: 'Default' },
+				kernelRadius: { default: 64 },
+				minDistance: { default: 0.0001 },
+				maxDistance: { default: 0.15 }
+			},
+			init: function () {
+				const scene = this.el.sceneEl.object3D;
+				const camera = this.el.sceneEl.camera;
+				const renderer = this.el.sceneEl.renderer;
+				const render = renderer.render;
+				const composer = new THREE.EffectComposer(renderer);
+
+				this.ssaoPass = new THREE.SSAOPass(scene, camera, window.innerWidth, window.innerHeight);
+				window.addEventListener('resize', e => {
+				    this.ssaoPass.width = window.innerWidth;
+				    this.ssaoPass.height = window.innerHeight;
+				});
+				composer.addPass(this.ssaoPass);
+
+				this.originalRenderFunc = render;
+
+				let calledByComposer = false;
+				const clock = new THREE.Clock();
+				this.composerFunc = function () {
+				    if (calledByComposer) {
+				        render.apply(renderer, arguments);
+				    } else {
+				        calledByComposer = true;
+				        composer.render(clock.getDelta());
+				        calledByComposer = false;
+				    }
+				};
+				renderer.render = this.composerFunc
+			},
+			update: function (oldData) {
+				var changes = AFRAME.utils.diff(oldData, this.data);
+				if ('enabled' in changes) {
+				    this.el.sceneEl.renderer.render = changes.enabled ? this.composerFunc : this.originalRenderFunc
+				}
+				if (changes.output) {
+				    this.ssaoPass.output = THREE.SSAOPass.OUTPUT[changes.output]
+				}
+				this.ssaoPass.kernelRadius = this.data.kernelRadius;
+				this.ssaoPass.minDistance = this.data.minDistance;
+				this.ssaoPass.maxDistance = this.data.maxDistance;
+			}
+		});
+    </script>
+
+</body>
+</html>
