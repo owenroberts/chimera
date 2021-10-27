@@ -23,12 +23,6 @@
 <script src='./js/scene.js'></script>
 <script>
 
-/* setup art scene */
-const config = {
-	maxARVideoSize: 640,
-	cameraParam: './lib/camera_para.dat',
-};
-
 const source = document.getElementById('source');
 const sourceTexture = new THREE.Texture(source);
 const markers = {};
@@ -48,15 +42,13 @@ videoScene.add(videoCamera);
 let arController, scene, camera;
 
 const cameraParam = new ARCameraParam(
-	'./lib/camera_para-iPhone 5 rear 640x480 1.0m.dat',
+	'./lib/camera_para.dat',
 	function() {
 		arController = new ARController(source, cameraParam);
 		arController.setPatternDetectionMode(artoolkit.AR_TEMPLATE_MATCHING_MONO_AND_MATRIX);
 		init();
 	},
-	function(err) {
-		console.log(err);
-	}
+	err => { console.log(err); }
 );
 
 function init() {

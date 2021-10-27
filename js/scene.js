@@ -1,11 +1,11 @@
 function ARScene(arScene, arController, renderCallback) {
 
+	const { scene, camera } = arScene;
 	let renderer;
 	let w, h;
 	let markers = [], mixers = [];
 	let riverAlphaTexture, riverDisplaceTexture;
-
-	const { scene, camera } = arScene;
+	let line, catBody;
 
 	init();
 
@@ -47,6 +47,7 @@ function ARScene(arScene, arController, renderCallback) {
 		scene.add(light);
 
 		loadModels(start);
+		setupOutline();
 	}
 
 	function loadModels(callback) {
@@ -76,12 +77,57 @@ function ARScene(arScene, arController, renderCallback) {
 			});
 			mixers.push(mixer);
 			markers[0].add(cat);
+
+			cat.traverse(o => {
+				if (o.material) {
+					if (o.material.name === 'CatBody') {
+						catBody = o;
+					}	
+				}
+			});
+
+			// setupLines();
+			// updateLines();
 		});
 
 		loader.load("models/river_plane.glb", gltf => {
 			setupRiverScene(gltf);
 		});
-	}	
+	}
+
+	function setupLines() {
+		const geo = createLines(true);
+		const mat = new THREE.LineBasicMaterial({ color: 0x000000, opacity: 1 });
+		line = new THREE.LineSegments(geo, mat);
+		markers[0].add(line);
+	}
+
+	function updateLines() {
+		// line.geometry.dispose();
+		line.geometry = createLines(false);
+	}
+
+	function createLines(firstTime) {
+		const geo = new THREE.BufferGeometry();
+		const verts = [];
+		const position = catBody.geometry.attributes.position;
+		const vert = new THREE.Vector3();
+
+		for (let i = 0, l = position.count; i < l; i++) {
+			vert.fromBufferAttribute(position, i);
+			vert.applyMatrix4(catBody.matrixWorld);
+			if (firstTime) vert.multiplyScalar(0.25);
+			verts.push(vert.x, vert.y, vert.z);
+			verts.push(
+				vert.x + 0.1 * (Math.random() - 0.5), 
+				vert.y + 0.1 * (Math.random() - 0.5), 
+				vert.z + 0.1 * (Math.random() - 0.5)
+			);
+		}
+
+		geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+		return geo;
+	}
 
 	function setupRiverScene(gltf) {
 		const textureLoader = new THREE.TextureLoader();
@@ -138,8 +184,8 @@ function ARScene(arScene, arController, renderCallback) {
 
 	function setupOutline() {
 		const effect = new THREE.OutlineEffect(renderer, {
-			defaultThickness: 0.00125,
-			defaultColor: new THREE.Color( 0x000000 ).toArray()
+			defaultThickness: 0.0025,
+			defaultColor: new THREE.Color( 0xffffff ).toArray()
 		});
 
 		let renderingOutline = false;
