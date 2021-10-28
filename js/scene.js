@@ -1,11 +1,11 @@
 function ARScene(arScene, arController, renderCallback) {
 
-	const { scene, camera } = arScene;
-	let renderer;
+	const { renderer, scene, camera } = arScene;
 	let w, h;
 	let markers = [], mixers = [];
 	let riverAlphaTexture, riverDisplaceTexture;
 	let line, catBody;
+	const textureLoader = new THREE.TextureLoader();
 
 	init();
 
@@ -14,10 +14,8 @@ function ARScene(arScene, arController, renderCallback) {
 
 		arController.setPatternDetectionMode(artoolkit.AR_TEMPLATE_MATCHING_MONO_AND_MATRIX);
 
-		renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 		renderer.setClearColor(0x000000, 0);
 		renderer.autoClear = true;
-	
 	
 		if (arController.orientation === 'portrait') {
 			w = window.innerHeight;
@@ -57,9 +55,23 @@ function ARScene(arScene, arController, renderCallback) {
 			if (callback) callback();
 		};
 		
-		loader.load("models/snake.glb", gltf => {
+		loader.load("models/new_snake.glb", gltf => {
 			const snake = gltf.scene;
 			snake.scale.multiplyScalar(0.25);
+
+			const snakeTexture = textureLoader.load('./models/scale.jpg');
+			snakeTexture.wrapS = THREE.RepeatWrapping;
+			snakeTexture.wrapT = THREE.RepeatWrapping;
+			snakeTexture.repeat.set(8, 8);
+
+			snake.traverse(child => {
+				if (child.material) {
+					if (child.material.name === 'SnakeSkin'){
+						child.material.map = snakeTexture;
+					}
+				}
+			});
+
 			const mixer = new THREE.AnimationMixer(snake);
 			gltf.animations.forEach(clip => {
 				mixer.clipAction(clip).play();
@@ -130,7 +142,7 @@ function ARScene(arScene, arController, renderCallback) {
 	}
 
 	function setupRiverScene(gltf) {
-		const textureLoader = new THREE.TextureLoader();
+		
 		riverAlphaTexture = textureLoader.load('./models/Bump2.png');
 		riverDisplaceTexture = textureLoader.load('./models/Voronoi.png');
 
@@ -220,7 +232,7 @@ function ARScene(arScene, arController, renderCallback) {
 			if (mixers[i]) mixers[i].update(timeElapsed / 1000);
 		}
 
-		if (renderCallback) renderCallback(time, renderer);
+		if (renderCallback) renderCallback(time);
 		else {
 			arScene.process();
 			arScene.renderOn(renderer);
@@ -228,5 +240,4 @@ function ARScene(arScene, arController, renderCallback) {
 
 		previousTime = time;
 	}
-
 }

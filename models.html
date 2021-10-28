@@ -1,0 +1,133 @@
+<html>
+<head>
+	<title>models test</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+	<link rel="stylesheet" href="style.css">
+	<style>
+		.desktop canvas {
+			transform: unset;
+		}
+	</style>
+</head>
+<body>
+	<!-- <video id="video" autoplay playsinline></video> -->
+	<img id="source" src="test/windows_source.png" alt="" style="display:none">
+
+<script src="./lib/three.min.js"></script>
+<script src='./lib/GLTFLoader.js'></script>
+<script src='./lib/three-clone-gltf.js'></script>
+
+<script src='./lib/OrbitControls.js'></script>
+<script src='./lib/OutlineEffect.js'></script>
+<script src='./js/scene.js'></script>
+<script>
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x999999);
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const textureLoader = new THREE.TextureLoader();
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+const light = new THREE.HemisphereLight(0xffffff, 0x080820, 1.5);
+scene.add(light);
+
+camera.position.z = 5;
+
+let mixers = [];
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+const effect = new THREE.OutlineEffect(renderer, {
+	defaultThickness: 0.0025,
+	defaultColor: new THREE.Color( 0xffffff ).toArray()
+});
+
+let renderingOutline = false;
+scene.onAfterRender = function() {
+	if (renderingOutline) return;
+	renderingOutline = true;
+	effect.renderOutline(scene, camera);
+	renderingOutline = false;
+};
+
+loadModels(start);
+
+function start() {
+	requestAnimationFrame(render);
+}
+
+function loadModels(callback) {
+	const loadingManager = new THREE.LoadingManager();
+	const loader = new THREE.GLTFLoader(loadingManager);
+	loadingManager.onLoad = function() {
+		if (callback) callback();
+	};
+
+	loader.load("models/new_snake.glb", gltf => {
+		const snake = gltf.scene;
+		snake.scale.multiplyScalar(0.25);
+
+		const snakeTexture = textureLoader.load('./models/scale.jpg');
+		const bumpTexture = textureLoader.load('./models/scale_bump.jpg');
+		const tongueBumpTexture = textureLoader.load('./models/Voronoi.png');
+
+		snakeTexture.wrapS = THREE.RepeatWrapping;
+		snakeTexture.wrapT = THREE.RepeatWrapping;
+		snakeTexture.repeat.set(1, 1);
+
+		bumpTexture.wrapS = THREE.RepeatWrapping;
+		bumpTexture.wrapT = THREE.RepeatWrapping;
+		bumpTexture.repeat.set(1, 1);
+
+		snake.traverse(child => {
+			if (child.material) {
+				console.log(child.material.name);
+				if (child.material.name === 'SnakeSkin'){
+					child.material.map = snakeTexture;
+					child.material.bumpMap = bumpTexture;
+					child.material.bumpScale = 0.01;
+				}
+
+				if (child.material.name === 'SnakeEyes') {
+					child.material.metalness = 1;
+				}
+
+				if (child.material.name === 'SnakeTongue') {
+					child.material.bumpMap = tongueBumpTexture;
+					child.material.bumpScale = 0.01;
+				}
+			}
+		});
+
+		const mixer = new THREE.AnimationMixer(snake);
+		gltf.animations.forEach(clip => {
+			mixer.clipAction(clip).play();
+		});
+		mixers.push(mixer);
+		scene.add(snake);
+	});
+}
+
+let previousTime = null;
+function render(time) {
+	
+	if (!previousTime) previousTime = time;
+	const timeElapsed = time - previousTime;
+	requestAnimationFrame(render);
+
+	for (let i = 0; i < mixers.length; i++) {
+		if (mixers[i]) mixers[i].update(timeElapsed / 1000);
+	}
+	
+	controls.update();
+	renderer.render( scene, camera );
+	previousTime = time;
+}
+// animate();
+
+
+</script>
+
+</body>
+</html>
