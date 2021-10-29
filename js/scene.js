@@ -1,6 +1,7 @@
 function ARScene(arScene, arController, renderCallback) {
 
 	const { scene, camera } = arScene;
+	let renderer;
 	let w, h;
 	let markers = [], mixers = [];
 	let riverAlphaTexture, riverDisplaceTexture;
