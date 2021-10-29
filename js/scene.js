@@ -1,6 +1,6 @@
 function ARScene(arScene, arController, renderCallback) {
 
-	const { renderer, scene, camera } = arScene;
+	const { scene, camera } = arScene;
 	let w, h;
 	let markers = [], mixers = [];
 	let riverAlphaTexture, riverDisplaceTexture;
@@ -14,6 +14,8 @@ function ARScene(arScene, arController, renderCallback) {
 
 		arController.setPatternDetectionMode(artoolkit.AR_TEMPLATE_MATCHING_MONO_AND_MATRIX);
 
+		renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setClearColor(0x000000, 0);
 		renderer.autoClear = true;
 	
@@ -57,17 +59,35 @@ function ARScene(arScene, arController, renderCallback) {
 		
 		loader.load("models/new_snake.glb", gltf => {
 			const snake = gltf.scene;
-			snake.scale.multiplyScalar(0.25);
+			snake.scale.multiplyScalar(0.125);
 
 			const snakeTexture = textureLoader.load('./models/scale.jpg');
+			const bumpTexture = textureLoader.load('./models/scale_bump.jpg');
+			const tongueBumpTexture = textureLoader.load('./models/Voronoi.png');
+
 			snakeTexture.wrapS = THREE.RepeatWrapping;
 			snakeTexture.wrapT = THREE.RepeatWrapping;
-			snakeTexture.repeat.set(8, 8);
+			snakeTexture.repeat.set(0.25, 0.25);
+
+			bumpTexture.wrapS = THREE.RepeatWrapping;
+			bumpTexture.wrapT = THREE.RepeatWrapping;
+			bumpTexture.repeat.set(0.25, 0.25);
 
 			snake.traverse(child => {
 				if (child.material) {
 					if (child.material.name === 'SnakeSkin'){
 						child.material.map = snakeTexture;
+						child.material.bumpMap = bumpTexture;
+						child.material.bumpScale = 0.01;
+					}
+
+					if (child.material.name === 'SnakeEyes') {
+						child.material.metalness = 1;
+					}
+
+					if (child.material.name === 'SnakeTongue') {
+						child.material.bumpMap = tongueBumpTexture;
+						child.material.bumpScale = 0.01;
 					}
 				}
 			});
@@ -232,7 +252,7 @@ function ARScene(arScene, arController, renderCallback) {
 			if (mixers[i]) mixers[i].update(timeElapsed / 1000);
 		}
 
-		if (renderCallback) renderCallback(time);
+		if (renderCallback) renderCallback(time, renderer);
 		else {
 			arScene.process();
 			arScene.renderOn(renderer);

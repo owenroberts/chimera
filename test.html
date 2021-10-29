@@ -53,12 +53,10 @@ const cameraParam = new ARCameraParam(
 function init() {
 	scene = new THREE.Scene();
 	camera = new THREE.Camera();
-	renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-	renderer.setPixelRatio(window.devicePixelRatio);
 	camera.matrixAutoUpdate = false;
 	setProjectionMatrix(camera.projectionMatrix, arController.getCameraMatrix());
 	scene.add(camera);
-	let ar = new ARScene({ scene: scene, camera: camera, renderer: renderer }, arController, render);
+	let ar = new ARScene({ scene: scene, camera: camera }, arController, render);
 }
 
 function process() {
@@ -68,7 +66,7 @@ function process() {
 	arController.process(source);
 }
 
-function render(time) {
+function render(time, renderer) {
 	if (!renderer) return;
 	process();
 

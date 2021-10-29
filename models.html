@@ -74,15 +74,14 @@ function loadModels(callback) {
 
 		snakeTexture.wrapS = THREE.RepeatWrapping;
 		snakeTexture.wrapT = THREE.RepeatWrapping;
-		snakeTexture.repeat.set(1, 1);
+		snakeTexture.repeat.set(0.25, 0.25);
 
 		bumpTexture.wrapS = THREE.RepeatWrapping;
 		bumpTexture.wrapT = THREE.RepeatWrapping;
-		bumpTexture.repeat.set(1, 1);
+		bumpTexture.repeat.set(0.25, 0.25);
 
 		snake.traverse(child => {
 			if (child.material) {
-				console.log(child.material.name);
 				if (child.material.name === 'SnakeSkin'){
 					child.material.map = snakeTexture;
 					child.material.bumpMap = bumpTexture;
