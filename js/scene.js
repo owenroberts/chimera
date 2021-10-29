@@ -80,9 +80,9 @@ function ARScene(arScene, arController, renderCallback) {
 			markers[2].add(snake);
 		});
 
-		loader.load("models/cats_1.glb", gltf => {
+		loader.load("models/cats_.glb", gltf => {
 			cat = gltf.scene;
-			cat.scale.multiplyScalar(0.25);
+			cat.scale.multiplyScalar(0.125);
 			const mixer = new THREE.AnimationMixer(cat);
 			gltf.animations.forEach(clip => {
 				mixer.clipAction(clip).play();
@@ -90,13 +90,13 @@ function ARScene(arScene, arController, renderCallback) {
 			mixers.push(mixer);
 			markers[0].add(cat);
 
-			cat.traverse(o => {
-				if (o.material) {
-					if (o.material.name === 'CatBody') {
-						catBody = o;
-					}	
-				}
-			});
+			// cat.traverse(o => {
+			// 	if (o.material) {
+			// 		if (o.material.name === 'CatBody') {
+			// 			catBody = o;
+			// 		}	
+			// 	}
+			// });
 
 			// setupLines();
 			// updateLines();
