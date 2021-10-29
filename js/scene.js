@@ -191,6 +191,7 @@ function ARScene(arScene, arController, renderCallback) {
 		});
 
 		const river = gltf.scene;
+		river.scale.multiplyScalar(0.75);
 
 		river.traverse(obj => {
 			if (obj.material) {
