@@ -1,3 +1,4 @@
 .DS_Store
 AR_MATRIX_CODE_3x3/
 *.pem
+lib/artoolkit.debug.js
