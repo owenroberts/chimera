@@ -8,6 +8,8 @@ function ARScene(arScene, arController, renderCallback) {
 	let line, catBody;
 	const textureLoader = new THREE.TextureLoader();
 
+	let composer, effectSobel;
+
 	init();
 
 	function init() {
@@ -15,25 +17,30 @@ function ARScene(arScene, arController, renderCallback) {
 
 		arController.setPatternDetectionMode(artoolkit.AR_TEMPLATE_MATCHING_MONO_AND_MATRIX);
 
-		renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setClearColor(0x000000, 0);
 		renderer.autoClear = true;
-	
+
 		if (arController.orientation === 'portrait') {
 			w = window.innerHeight;
 			h = (arController.videoWidth / arController.videoHeight) * window.innerWidth;
-			renderer.setSize(w, h);
+			// renderer.setSize(w, h);
 		} else {
 			if (/Android|mobile|iPad|iPhone/i.test(navigator.userAgent)) {
-				renderer.setSize(window.innerWidth, (window.innerWidth / arController.videoWidth) * arController.videoHeight);
+				w = window.innerWidth;
+				h = (window.innerWidth / arController.videoWidth) * arController.videoHeight;
+				// renderer.setSize(w, h);
 			} else {
 				w = window.innerWidth;
 				h = (w / arController.videoWidth) * arController.videoHeight;
-				renderer.setSize(w, h);
+				// renderer.setSize(w, h);
 				document.body.className += ' desktop';
 			}
 		}
+		let crunch = 2;
+		renderer.setSize(w / crunch, h / crunch);
+		renderer.domElement.style.zoom = crunch;
 
 		document.body.insertBefore(renderer.domElement, document.body.firstChild);
 
@@ -44,7 +51,9 @@ function ARScene(arScene, arController, renderCallback) {
 		});
 
 		// lighting
-		const light = new THREE.HemisphereLight(0xffffff, 0x080820, 1.5);
+		// const light = new THREE.HemisphereLight(0xffffff, 0x080820, 1.5);
+		const light = new THREE.HemisphereLight(0xffffff, 0xFFFFFF, 2);
+
 		scene.add(light);
 
 		loadModels(start);
@@ -77,18 +86,21 @@ function ARScene(arScene, arController, renderCallback) {
 			snake.traverse(child => {
 				if (child.material) {
 					if (child.material.name === 'SnakeSkin'){
-						child.material.map = snakeTexture;
-						child.material.bumpMap = bumpTexture;
-						child.material.bumpScale = 0.01;
+						// child.material.map = bumpTexture;
+						// child.material.bumpMap = bumpTexture;
+						// child.material.bumpScale = 0.01;
+						child.material.color.setHex(0x000000);
 					}
 
 					if (child.material.name === 'SnakeEyes') {
-						child.material.metalness = 1;
+						// child.material.metalness = 1;
+						child.material.color.setHex(0xFFFFFF);
 					}
 
 					if (child.material.name === 'SnakeTongue') {
-						child.material.bumpMap = tongueBumpTexture;
-						child.material.bumpScale = 0.01;
+						// child.material.bumpMap = tongueBumpTexture;
+						// child.material.bumpScale = 0.01;
+						child.material.color.setHex(0x000000);
 					}
 				}
 			});
@@ -176,15 +188,15 @@ function ARScene(arScene, arController, renderCallback) {
 		riverDisplaceTexture.repeat.set(8, 8);
 
 		const riverMaterial = new THREE.MeshStandardMaterial({ 
-			color: 0x98b6e7,
+			color: 0x00000, // 0x98b6e7,
 			transparent: true,
-			opacity: 0.5,
+			opacity: 1,
 			displacementMap: riverDisplaceTexture,
 			displacementScale: 0.125,
 		});
 
 		const riverTopMaterial = new THREE.MeshStandardMaterial({ 
-			color: 0xb2e7f7,
+			color: 0xFFFFFF, // 0xb2e7f7,
 			alphaMap: riverAlphaTexture,
 			transparent: true,
 			displacementMap: riverDisplaceTexture,
@@ -218,7 +230,7 @@ function ARScene(arScene, arController, renderCallback) {
 
 	function setupOutline() {
 		const effect = new THREE.OutlineEffect(renderer, {
-			defaultThickness: 0.0025,
+			defaultThickness: 0.005,
 			defaultColor: new THREE.Color( 0xffffff ).toArray()
 		});
 
@@ -254,10 +266,11 @@ function ARScene(arScene, arController, renderCallback) {
 			if (mixers[i]) mixers[i].update(timeElapsed / 1000);
 		}
 
-		if (renderCallback) renderCallback(time, renderer);
-		else {
+		if (renderCallback) {
+			renderCallback(time, renderer);
+		} else {
 			arScene.process();
-			arScene.renderOn(renderer);
+			arScene.renderOn(renderer, composer);
 		}
 
 		previousTime = time;
