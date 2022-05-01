@@ -7,6 +7,8 @@ function ARScene(arScene, arController, renderCallback) {
 	let riverAlphaTexture, riverDisplaceTexture;
 	let line, catBody;
 	const textureLoader = new THREE.TextureLoader();
+	let outlineColor = 0xFFFFFF,
+		fillColor = 0x000000;
 
 	let composer, effectSobel;
 
@@ -86,21 +88,22 @@ function ARScene(arScene, arController, renderCallback) {
 			snake.traverse(child => {
 				if (child.material) {
 					if (child.material.name === 'SnakeSkin'){
+						child.material.map = undefined;
 						// child.material.map = bumpTexture;
 						// child.material.bumpMap = bumpTexture;
 						// child.material.bumpScale = 0.01;
-						child.material.color.setHex(0x000000);
+						child.material.color.setHex(fillColor);
 					}
 
 					if (child.material.name === 'SnakeEyes') {
 						// child.material.metalness = 1;
-						child.material.color.setHex(0xFFFFFF);
+						child.material.color.setHex(outlineColor);
 					}
 
 					if (child.material.name === 'SnakeTongue') {
 						// child.material.bumpMap = tongueBumpTexture;
 						// child.material.bumpScale = 0.01;
-						child.material.color.setHex(0x000000);
+						child.material.color.setHex(fillColor);
 					}
 				}
 			});
@@ -188,7 +191,7 @@ function ARScene(arScene, arController, renderCallback) {
 		riverDisplaceTexture.repeat.set(8, 8);
 
 		const riverMaterial = new THREE.MeshStandardMaterial({ 
-			color: 0x00000, // 0x98b6e7,
+			color: fillColor, // 0x98b6e7,
 			transparent: true,
 			opacity: 1,
 			displacementMap: riverDisplaceTexture,
@@ -196,7 +199,7 @@ function ARScene(arScene, arController, renderCallback) {
 		});
 
 		const riverTopMaterial = new THREE.MeshStandardMaterial({ 
-			color: 0xFFFFFF, // 0xb2e7f7,
+			color: outlineColor, // 0xb2e7f7,
 			alphaMap: riverAlphaTexture,
 			transparent: true,
 			displacementMap: riverDisplaceTexture,
@@ -231,7 +234,7 @@ function ARScene(arScene, arController, renderCallback) {
 	function setupOutline() {
 		const effect = new THREE.OutlineEffect(renderer, {
 			defaultThickness: 0.005,
-			defaultColor: new THREE.Color( 0xffffff ).toArray()
+			defaultColor: new THREE.Color( outlineColor ).toArray()
 		});
 
 		let renderingOutline = false;
