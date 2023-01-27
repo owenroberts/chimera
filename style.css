@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Nova+Round&display=swap');
+
+* {
+	box-sizing: border-box;
+}
+
 html,body {
 	margin: 0;
 	padding: 0;
@@ -8,7 +14,129 @@ html,body {
 
 body { 
 	background: radial-gradient(plum, lightblue); 
+	padding-top: 2em;
+	padding: 2em;
 }
+
+body * {
+	font-family: 'Nova Round', sans-serif;
+}
+
+h1, h2, p, a {
+	color: white;
+	text-shadow: 3px 3px 0 hotpink;
+}
+
+h1 {
+	font-size: 2.5em;
+}
+
+p {
+	font-size: 1.5em;
+}
+
+button {
+	font-size: 2em;
+}
+
+a { font-size: 2em; }
+
+#numbers {
+	display: flex;
+	justify-content: center;
+	gap: 1em;
+	flex-wrap: wrap;
+}
+
+#guide-button {
+	position: fixed;
+    z-index: 99;
+    bottom: 10px;
+    right: 10px;
+}
+
+#guide {
+	display: none;
+	position: fixed;
+	z-index: 99;
+	top: 0;
+	left: 0;
+	margin: 1em;
+	background: radial-gradient(plum, lightblue);
+	padding: 1em;
+	border: 4px solid plum;
+	border-radius: 1em;
+}
+
+#guide.visible {
+	display: block;
+}
+
+/* https://codepen.io/markcaron/pen/RVvmaz?editors=1100  */
+.accordion > input[type="checkbox"] {
+	position: absolute;
+	left: -100vw;
+}
+
+.accordion .content {
+	overflow-y: hidden;
+	height: 0;
+	transition: height 0.3s ease;
+}
+
+.accordion > input[type="checkbox"]:checked ~ .content {
+	height: auto;
+	overflow: visible;
+}
+
+.accordion label {
+	display: block;
+}
+
+.accordion {
+	margin-bottom: 1em;
+}
+
+.accordion > input[type="checkbox"]:checked ~ .content {
+	padding: 15px;
+	border: 2px solid plum;
+	border-radius: 1em;
+	border-top: 0;
+}
+
+.accordion .handle {
+	margin: 0;
+	font-size: 1.125em;
+	line-height: 1.2em;
+}	
+
+.accordion label {
+/*	color: #333;*/
+	cursor: pointer;
+	font-weight: normal;
+	padding: 15px;
+/*	background: #e8e8e8;*/
+	border: 2px solid plum;
+	border-radius: 1em;
+
+}
+
+.accordion label:hover,
+.accordion label:focus {
+/*	background: #d8d8d8;*/
+}
+
+.accordion .handle label:before {
+	font-family: 'fontawesome';
+	content: "\f054";
+	display: inline-block;
+	margin-right: 10px;
+	font-size: .58em;
+	line-height: 1.556em;
+	vertical-align: middle;
+}
+
+
 
 .portrait canvas {
 	transform-origin: 0 0;

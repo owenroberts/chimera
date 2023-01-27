@@ -1,0 +1,53 @@
+<html>
+<head>
+	<title>chimera</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+	<div id="guide">
+		<section id="positions" class="accordion">
+			<input type="checkbox" name="collapse" id="handle1">
+			<h2 class="handle">
+				<label for="handle1">The Positions</label>
+			</h2>
+			<div class="content">
+				<p>Each position represents part of the arc of your life.</p>
+			</div>
+		</section>
+
+		<section class="accordion" id="animals">
+			<input type="checkbox" name="collapse2" id="handle2">
+			<h2 class="handle">
+				<label for="handle2">The Animals</label>
+			</h2>
+			<div class="content">
+				<p>Each chimera is a hybrid of three animals.  Each animals carries a meaning.</p>
+			</div>
+		</section>
+
+		<div id="guide-dismiss">
+			<a href="#">Close</a>
+		</div>
+	</div>
+
+	<div id="guide-button">
+		<img src="img/guide_icon.png" alt="">
+	</div>
+
+	<video id="video" autoplay playsinline></video>
+
+	<script src="./lib/artoolkit.min.js"></script>
+	<script src="./lib/three.min.js"></script>
+	<script src="./lib/artoolkit.three.js"></script>
+	<script src='./lib/GLTFLoader.js'></script>
+	<script src='./lib/three-clone-gltf.js'></script>
+	<script src='./lib/OutlineEffect.js'></script>
+
+	<script src='./js/scene.js'></script>
+	<script src='./js/main.js'></script>
+	<script src='./js/guide.js'></script>
+
+</body>
+</html>
