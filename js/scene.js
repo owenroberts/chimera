@@ -1,9 +1,27 @@
 function ARScene(arScene, arController, renderCallback) {
 
+
+	/* save user chimeric arc */
+	/* this could be recognizable pattern, go with it for now */
+
+	const stored = localStorage.getItem('chimera');
+	let a, b, c;
+	if (stored) {
+		const d = JSON.parse(stored);
+		a = d.a;
+		b = d.b;
+		c = d.c;
+	} else {
+		a = [...shuffle([1,2,3,4,5,6,7,8,9,10,11,12])];
+		b = shiftArray(a);
+		c = shiftArray(b);
+		localStorage.setItem('chimera', JSON.stringify({ a: a, b: b, c: c }));
+	}
+
 	const { scene, camera } = arScene;
 	let renderer;
 	let w, h;
-	let markers = [], mixers = [];
+	let markers = [], mixers = [], markerGroups = [];
 	let riverAlphaTexture, riverDisplaceTexture;
 	let line, catBody;
 	const textureLoader = new THREE.TextureLoader();
@@ -50,7 +68,11 @@ function ARScene(arScene, arController, renderCallback) {
 		[0, 1, 2].forEach(i => {
 			markers[i] = arController.createThreeBarcodeMarker(i, 1);
 			scene.add(markers[i]);
+			markerGroups[i] = new THREE.Group();
+			markers[i].add(markerGroups[i]);
 		});
+
+
 
 		// lighting
 		// const light = new THREE.HemisphereLight(0xffffff, 0x080820, 1.5);
@@ -68,81 +90,20 @@ function ARScene(arScene, arController, renderCallback) {
 		loadingManager.onLoad = function() {
 			if (callback) callback();
 		};
+
+		loader.load('models/body.glb', gltf => {
+			console.log('body', gltf);
+			const body = gltf.scene;
+			markers.forEach(m => {
+				const newBody = cloneGltf(gltf).scene;
+				m.add(newBody);
+			});
+		});
 		
-		loader.load("models/new_snake.glb", gltf => {
-			const snake = gltf.scene;
-			snake.scale.multiplyScalar(0.125);
-
-			const snakeTexture = textureLoader.load('./models/scale.jpg');
-			const bumpTexture = textureLoader.load('./models/scale_bump.jpg');
-			const tongueBumpTexture = textureLoader.load('./models/Voronoi.png');
-
-			snakeTexture.wrapS = THREE.RepeatWrapping;
-			snakeTexture.wrapT = THREE.RepeatWrapping;
-			snakeTexture.repeat.set(0.25, 0.25);
-
-			bumpTexture.wrapS = THREE.RepeatWrapping;
-			bumpTexture.wrapT = THREE.RepeatWrapping;
-			bumpTexture.repeat.set(0.25, 0.25);
-
-			snake.traverse(child => {
-				if (child.material) {
-					if (child.material.name === 'SnakeSkin'){
-						child.material.map = undefined;
-						// child.material.map = bumpTexture;
-						// child.material.bumpMap = bumpTexture;
-						// child.material.bumpScale = 0.01;
-						child.material.color.setHex(fillColor);
-					}
-
-					if (child.material.name === 'SnakeEyes') {
-						// child.material.metalness = 1;
-						child.material.color.setHex(outlineColor);
-					}
-
-					if (child.material.name === 'SnakeTongue') {
-						// child.material.bumpMap = tongueBumpTexture;
-						// child.material.bumpScale = 0.01;
-						child.material.color.setHex(fillColor);
-					}
-				}
-			});
-
-			const mixer = new THREE.AnimationMixer(snake);
-			gltf.animations.forEach(clip => {
-				mixer.clipAction(clip).play();
-			});
-			mixers.push(mixer);
-			markers[2].add(snake);
-		});
-
-		loader.load("models/cats_.glb", gltf => {
-			cat = gltf.scene;
-			cat.scale.multiplyScalar(0.125);
-			const mixer = new THREE.AnimationMixer(cat);
-			gltf.animations.forEach(clip => {
-				mixer.clipAction(clip).play();
-			});
-			mixers.push(mixer);
-			markers[0].add(cat);
-
-			// cat.traverse(o => {
-			// 	if (o.material) {
-			// 		if (o.material.name === 'CatBody') {
-			// 			catBody = o;
-			// 		}	
-			// 	}
-			// });
-
-			// setupLines();
-			// updateLines();
-		});
-
-		loader.load("models/river_plane.glb", gltf => {
-			setupRiverScene(gltf);
-		});
+		
 	}
 
+	/* what does this do ?? */
 	function setupLines() {
 		const geo = createLines(true);
 		const mat = new THREE.LineBasicMaterial({ color: 0x000000, opacity: 1 });
@@ -177,56 +138,6 @@ function ARScene(arScene, arController, renderCallback) {
 		return geo;
 	}
 
-	function setupRiverScene(gltf) {
-		
-		riverAlphaTexture = textureLoader.load('./models/Bump2.png');
-		riverDisplaceTexture = textureLoader.load('./models/Voronoi.png');
-
-		riverAlphaTexture.wrapS = THREE.RepeatWrapping;
-		riverAlphaTexture.wrapT = THREE.RepeatWrapping;
-		riverAlphaTexture.repeat.set(4, 4);
-
-		riverDisplaceTexture.wrapS = THREE.RepeatWrapping;
-		riverDisplaceTexture.wrapT = THREE.RepeatWrapping;
-		riverDisplaceTexture.repeat.set(8, 8);
-
-		const riverMaterial = new THREE.MeshStandardMaterial({ 
-			color: fillColor, // 0x98b6e7,
-			transparent: true,
-			opacity: 1,
-			displacementMap: riverDisplaceTexture,
-			displacementScale: 0.125,
-		});
-
-		const riverTopMaterial = new THREE.MeshStandardMaterial({ 
-			color: outlineColor, // 0xb2e7f7,
-			alphaMap: riverAlphaTexture,
-			transparent: true,
-			displacementMap: riverDisplaceTexture,
-			displacementScale: 0.125,
-		});
-
-		const river = gltf.scene;
-		river.scale.multiplyScalar(0.75);
-
-		river.traverse(obj => {
-			if (obj.material) {
-				obj.material = riverMaterial;
-			}
-		});
-
-		const riverTop = cloneGltf(gltf).scene;
-		riverTop.position.set(0, -0.05, -0.05);
-		river.traverse(obj => {
-			if (obj.material) {
-				obj.material = riverTopMaterial;
-			}
-		});
-
-		markers[1].add(river);
-		markers[1].add(riverTop);
-	}
-
 	function start() {
 		requestAnimationFrame(render);
 	}
@@ -247,14 +158,6 @@ function ARScene(arScene, arController, renderCallback) {
 	}
 
 	let startTime = performance.now();
-	function animateRiver() {
-		const time = performance.now() - startTime;
-		riverAlphaTexture.offset.set(0, time * 0.000125);
-		riverAlphaTexture.needsUpdate = true;
-
-		riverDisplaceTexture.offset.set(0, time * 0.00005);
-		riverDisplaceTexture.needsUpdate = true;
-	}
 
 	let previousTime = null;
 	function render(time) {
@@ -263,7 +166,6 @@ function ARScene(arScene, arController, renderCallback) {
 		const timeElapsed = time - previousTime;
 		requestAnimationFrame(render);
 
-		animateRiver();
 
 		for (let i = 0; i < mixers.length; i++) {
 			if (mixers[i]) mixers[i].update(timeElapsed / 1000);
@@ -278,4 +180,23 @@ function ARScene(arScene, arController, renderCallback) {
 
 		previousTime = time;
 	}
+}
+
+
+function shuffle(array) {
+	// https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+	let currentIndex = array.length, randomIndex;
+	while (currentIndex != 0) {
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		currentIndex--;
+		[array[currentIndex], array[randomIndex]] = [
+			array[randomIndex], array[currentIndex]];
+	}
+	return array;
+}
+
+function shiftArray(array, shiftBy) {
+	const a = [...array];
+	a.unshift(a.pop());
+	return a;
 }
