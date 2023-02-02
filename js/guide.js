@@ -1,7 +1,6 @@
 window.onload = guideSetup;
 
 function guideSetup() {
-	console.log('guide setup')
 	const guideButton = document.getElementById('guide-button');
 	const guide = document.getElementById('guide');
 	const dismissGuide = document.getElementById('guide-dismiss');

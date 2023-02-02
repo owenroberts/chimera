@@ -29,7 +29,6 @@ function ARScene(arScene, arController, renderCallback) {
 		fillColor = 0x000000;
 
 	let composer, effectSobel;
-	const modelScale = 0.5;
 
 	init();
 
@@ -96,16 +95,21 @@ function ARScene(arScene, arController, renderCallback) {
 
 		// rotate markers?
 		markers.forEach((m, i) => {
+			
+			m.group.rotation.y = Math.PI * 0.25;
+			m.group.position.z = 0.5;
+			m.group.position.y = -0.5;
+
 			if (m.code === 0 || m.code === 32) {
 				m.group.rotation.z = Math.PI;
-				console.log(m);
+				m.group.rotation.y = Math.PI * -0.25;
+				m.group.position.y = 0.5;
 			}
 		});
 
 		loader.load('models/body.glb', gltf => {
 			markers.forEach(m => {
 				const body = cloneGltf(gltf).scene.children[0];
-				body.scale.set(modelScale, modelScale, modelScale);
 				m.group.add(body);
 			});
 		});
@@ -114,13 +118,10 @@ function ARScene(arScene, arController, renderCallback) {
 			markers.forEach(m => {
 				const parts = cloneGltf(gltf).scene;
 				// match h, b, r to a, b, c
-				parts.children.forEach(part => {
-					// if (child.name.includes('_h')) console.log('head');
-					// if (child.name.includes('_b')) console.log('body');
-					// if (child.name.includes('_r')) console.log('rear');
-					part.scale.set(modelScale, modelScale, modelScale);
+				for (let i = parts.children.length - 1; i >= 0; i--) {
+					const part = parts.children[i];
 					m.group.add(part);
-				});
+				}
 			});
 		});
 		
