@@ -21,7 +21,7 @@ function ARScene(arScene, arController, renderCallback) {
 	const { scene, camera } = arScene;
 	let renderer;
 	let w, h;
-	let markers = [], mixers = [], markerGroups = [];
+	let markers = [], mixers = [];
 	let riverAlphaTexture, riverDisplaceTexture;
 	let line, catBody;
 	const textureLoader = new THREE.TextureLoader();
@@ -29,6 +29,7 @@ function ARScene(arScene, arController, renderCallback) {
 		fillColor = 0x000000;
 
 	let composer, effectSobel;
+	const modelScale = 0.5;
 
 	init();
 
@@ -65,13 +66,15 @@ function ARScene(arScene, arController, renderCallback) {
 		document.body.insertBefore(renderer.domElement, document.body.firstChild);
 
 		// set up markers
-		[0, 1, 2].forEach(i => {
+		// flip 0 and 32
+		[0, 32, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].forEach(i => {
 			markers[i] = arController.createThreeBarcodeMarker(i, 1);
+			markers[i].code = i;
+			markers[i].group = new THREE.Group();
+			// scene.add(markers[i].group);
+			markers[i].add(markers[i].group);
 			scene.add(markers[i]);
-			markerGroups[i] = new THREE.Group();
-			markers[i].add(markerGroups[i]);
 		});
-
 
 
 		// lighting
@@ -91,15 +94,35 @@ function ARScene(arScene, arController, renderCallback) {
 			if (callback) callback();
 		};
 
+		// rotate markers?
+		markers.forEach((m, i) => {
+			if (m.code === 0 || m.code === 32) {
+				m.group.rotation.z = Math.PI;
+				console.log(m);
+			}
+		});
+
 		loader.load('models/body.glb', gltf => {
-			console.log('body', gltf);
-			const body = gltf.scene;
 			markers.forEach(m => {
-				const newBody = cloneGltf(gltf).scene;
-				m.add(newBody);
+				const body = cloneGltf(gltf).scene.children[0];
+				body.scale.set(modelScale, modelScale, modelScale);
+				m.group.add(body);
 			});
 		});
-		
+
+		loader.load('models/ch1_parts.glb', gltf => {
+			markers.forEach(m => {
+				const parts = cloneGltf(gltf).scene;
+				// match h, b, r to a, b, c
+				parts.children.forEach(part => {
+					// if (child.name.includes('_h')) console.log('head');
+					// if (child.name.includes('_b')) console.log('body');
+					// if (child.name.includes('_r')) console.log('rear');
+					part.scale.set(modelScale, modelScale, modelScale);
+					m.group.add(part);
+				});
+			});
+		});
 		
 	}
 
@@ -144,7 +167,7 @@ function ARScene(arScene, arController, renderCallback) {
 
 	function setupOutline() {
 		const effect = new THREE.OutlineEffect(renderer, {
-			defaultThickness: 0.005,
+			defaultThickness: 0.0025,
 			defaultColor: new THREE.Color( outlineColor ).toArray()
 		});
 
