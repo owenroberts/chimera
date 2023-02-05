@@ -4,7 +4,7 @@ function ARScene(arScene, arController, renderCallback) {
 	/* save user chimeric arc */
 	/* this could be recognizable pattern, go with it for now */
 
-	const stored = localStorage.getItem('chimera');
+	const stored = false; // localStorage.getItem('chimera');
 	let a, b, c;
 	if (stored) {
 		const d = JSON.parse(stored);
@@ -12,11 +12,13 @@ function ARScene(arScene, arController, renderCallback) {
 		b = d.b;
 		c = d.c;
 	} else {
-		a = [...shuffle([1,2,3,4,5,6,7,8,9,10,11,12])];
+		// a = [...shuffle([1,2,3,4,5,6,7,8,9,10,11,12])];
+		a = [...shuffle([0, 1, 2, 0,1,2,0,1,2,0,1,2,0,1,2])];
 		b = shiftArray(a);
 		c = shiftArray(b);
 		localStorage.setItem('chimera', JSON.stringify({ a: a, b: b, c: c }));
 	}
+	const markerIndexes = [0, 32, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12];
 
 	const { scene, camera } = arScene;
 	let renderer;
@@ -37,7 +39,11 @@ function ARScene(arScene, arController, renderCallback) {
 
 		arController.setPatternDetectionMode(artoolkit.AR_TEMPLATE_MATCHING_MONO_AND_MATRIX);
 
-		renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+		renderer = new THREE.WebGLRenderer({ 
+			antialias: false, 
+			alpha: true,
+			// logarithmicDepthBuffer: true,
+		});
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setClearColor(0x000000, 0);
 		renderer.autoClear = true;
@@ -66,7 +72,7 @@ function ARScene(arScene, arController, renderCallback) {
 
 		// set up markers
 		// flip 0 and 32
-		[0, 32, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].forEach(i => {
+		markerIndexes.forEach(i => {
 			markers[i] = arController.createThreeBarcodeMarker(i, 1);
 			markers[i].code = i;
 			markers[i].group = new THREE.Group();
@@ -78,7 +84,7 @@ function ARScene(arScene, arController, renderCallback) {
 
 		// lighting
 		// const light = new THREE.HemisphereLight(0xffffff, 0x080820, 1.5);
-		const light = new THREE.HemisphereLight(0xffffff, 0xFFFFFF, 2);
+		const light = new THREE.HemisphereLight(0xffffff, 0xFFFFFF, 1);
 
 		scene.add(light);
 
@@ -91,11 +97,13 @@ function ARScene(arScene, arController, renderCallback) {
 		const loader = new THREE.GLTFLoader(loadingManager);
 		loadingManager.onLoad = function() {
 			if (callback) callback();
+			markers.forEach(m => {
+				m.body.material = m.bodyMaterial;
+			});
 		};
 
 		// rotate markers?
 		markers.forEach((m, i) => {
-			
 			m.group.rotation.y = Math.PI * 0.25;
 			m.group.position.z = 0.5;
 			m.group.position.y = -0.5;
@@ -110,21 +118,53 @@ function ARScene(arScene, arController, renderCallback) {
 		loader.load('models/body.glb', gltf => {
 			markers.forEach(m => {
 				const body = cloneGltf(gltf).scene.children[0];
+				m.body = body;
 				m.group.add(body);
 			});
 		});
 
-		loader.load('models/ch1_parts.glb', gltf => {
-			markers.forEach(m => {
-				const parts = cloneGltf(gltf).scene;
-				// match h, b, r to a, b, c
-				for (let i = parts.children.length - 1; i >= 0; i--) {
-					const part = parts.children[i];
-					m.group.add(part);
-				}
+		const models = [
+			'models/ch1_cat.glb',
+			'models/ch2_bird.glb',
+			'models/ch3_fish.glb',
+		];
+		
+		models.forEach((url, index) => {
+			loader.load(url, gltf => {
+
+				const aMarkers = markerIndexes.filter((_, i) => a[i] === index);
+				const bMarkers = markerIndexes.filter((_, i) => b[i] === index);
+				const cMarkers = markerIndexes.filter((_, i) => c[i] === index);
+
+				aMarkers.forEach(mi => {
+					const parts = cloneGltf(gltf).scene.children.filter(p => p.name.includes('_h'));
+					for (let i = parts.length - 1; i >= 0; i--) {
+						const part = parts[i];
+						markers[mi].group.add(part);
+					}
+				});
+
+				bMarkers.forEach(mi => {
+					const parts = cloneGltf(gltf).scene.children.filter(p => p.name.includes('_b'));
+					for (let i = parts.length - 1; i >= 0; i--) {
+						const part = parts[i];
+						// console.log(mi, markers[mi].body)
+						markers[mi].bodyMaterial = part.material;
+						markers[mi].group.add(part);
+					}
+				});
+
+				cMarkers.forEach(mi => {
+					const parts = cloneGltf(gltf).scene.children.filter(p => p.name.includes('_r'));
+					for (let i = parts.length - 1; i >= 0; i--) {
+						const part = parts[i];
+						markers[mi].group.add(part);
+					}
+				});
+
+
 			});
 		});
-		
 	}
 
 	/* what does this do ?? */

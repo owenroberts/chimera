@@ -44,6 +44,11 @@ button {
 
 a { font-size: 2em; }
 
+canvas {
+	position: fixed;
+	z-index: -1;
+}
+
 #numbers {
 	display: flex;
 	justify-content: center;
@@ -77,7 +82,6 @@ a { font-size: 2em; }
 
 #guide {
 	display: none;
-	position: fixed;
 	z-index: 99;
 	top: 0;
 	left: 0;
@@ -98,10 +102,37 @@ a { font-size: 2em; }
 	left: -100vw;
 }
 
+#tags p,
+#animals p {
+	text-align: left;
+}
+
+#tags img {
+	width: 48px;
+	vertical-align: middle;
+}
+
+#animals img {
+	width: 128px;
+}
+
+#animals p {
+	display: flex;
+}
+
 .accordion .content {
 	overflow-y: hidden;
 	height: 0;
 	transition: height 0.3s ease;
+	position: relative;
+}
+
+.accordion .content p {
+	font-size: 1.25em;
+}
+
+.accordion .content img {
+	width: 100%;
 }
 
 .accordion > input[type="checkbox"]:checked ~ .content {

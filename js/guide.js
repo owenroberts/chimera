@@ -6,7 +6,11 @@ function guideSetup() {
 	const dismissGuide = document.getElementById('guide-dismiss');
 	
 	guideButton.addEventListener('click', () => {
-		guide.classList.add('visible');
+		if (guide.classList.contains('visible')) {
+			guide.classList.remove('visible');
+		} else {
+			guide.classList.add('visible');
+		}
 	});
 
 	dismissGuide.addEventListener('click', () => {
