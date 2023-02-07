@@ -6,15 +6,18 @@ function ARScene(arScene, arController, renderCallback) {
 
 	const stored = false; // localStorage.getItem('chimera');
 	let a, b, c;
-	if (stored) {
+	if (false && stored) {
 		const d = JSON.parse(stored);
 		a = d.a;
 		b = d.b;
 		c = d.c;
 	} else {
-		a = [...shuffle([0,1,2,3,4,5,6,7,8,9,10,11])];
-		b = shiftArray(a);
-		c = shiftArray(b);
+		a = shuffle([0,1,2,3,4,5,6,7,8,9,10,11]);
+		const n = shuffle([2,3,4]);
+		console.log(n);
+		b = shiftArray(a, n[0]);
+		c = shiftArray(b, n[1]);
+		console.log(a,b,c);
 		localStorage.setItem('chimera', JSON.stringify({ a: a, b: b, c: c }));
 	}
 	const markerIndexes = [0, 32, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12];
@@ -335,6 +338,8 @@ function shuffle(array) {
 
 function shiftArray(array, shiftBy) {
 	const a = [...array];
-	a.unshift(a.pop());
+	for (let i = 0; i < shiftBy; i++) {
+		a.unshift(a.pop());
+	}
 	return a;
 }
