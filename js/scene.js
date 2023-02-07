@@ -121,14 +121,31 @@ function ARScene(arScene, arController, renderCallback) {
 				// side: THREE.DoubleSide
 			});
 
+			
+
 			strings.forEach((string, index) => {
 
-				const shapes = font.generateShapes(string, 0.15);
-				const geometry = new THREE.ShapeGeometry(shapes);
-				geometry.computeBoundingBox();
-				const xMid = - 0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
-				geometry.translate(xMid, 0, 0);
-				const text = new THREE.Mesh(geometry, matLite);
+				const textGeo = new THREE.TextGeometry(string, {
+					font: font,
+					size: 0.2,
+					height: 0.05,
+					curveSegments: 4,
+					bevelThickness: 0,
+					bevelSize: 0,
+				});
+				textGeo.computeBoundingBox();
+				const centerOffset = - 0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
+				textGeo.translate(centerOffset, 0, 0);
+				const text = new THREE.Mesh( textGeo, matLite );
+
+
+
+				// const shapes = font.generateShapes(string, 0.15);
+				// const geometry = new THREE.ShapeGeometry(shapes);
+				// geometry.computeBoundingBox();
+				// const xMid = - 0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+				// geometry.translate(xMid, 0, 0);
+				// const text = new THREE.Mesh(geometry, matLite);
 				if (index <= 1) {
 					text.rotation.z = Math.PI;
 				}
