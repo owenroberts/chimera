@@ -84,12 +84,14 @@ function ARScene(arScene, arController, renderCallback) {
 
 		// lighting
 		// const light = new THREE.HemisphereLight(0xffffff, 0x080820, 1.5);
-		const light = new THREE.HemisphereLight(0xffffff, 0xFFFFFF, 1);
+		const light = new THREE.HemisphereLight(0xFEFCF0, 0x47464E, 1);
+		// light.position.y = -10;
+		// light.position.z = 10;
 
 		scene.add(light);
 
 		loadModels(start);
-		// setupOutline();
+		setupOutline();
 	}
 
 	function addText() {
@@ -182,6 +184,7 @@ function ARScene(arScene, arController, renderCallback) {
 		});
 
 		loader.load('models/body.glb', gltf => {
+			console.log(gltf);
 			markers.forEach(m => {
 				const body = cloneGltf(gltf).scene.children[0];
 				m.body = body;
