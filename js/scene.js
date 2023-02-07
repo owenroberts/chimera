@@ -12,8 +12,7 @@ function ARScene(arScene, arController, renderCallback) {
 		b = d.b;
 		c = d.c;
 	} else {
-		// a = [...shuffle([1,2,3,4,5,6,7,8,9,10,11,12])];
-		a = [...shuffle([0, 1, 2, 0,1,2,0,1,2,0,1,2,0,1,2])];
+		a = [...shuffle([0,1,2,3,4,5,6,7,8,9,10,11])];
 		b = shiftArray(a);
 		c = shiftArray(b);
 		localStorage.setItem('chimera', JSON.stringify({ a: a, b: b, c: c }));
@@ -89,7 +88,55 @@ function ARScene(arScene, arController, renderCallback) {
 		scene.add(light);
 
 		loadModels(start);
-		setupOutline();
+		// setupOutline();
+	}
+
+	function addText() {
+
+		const strings = [
+			"The past",
+			"Today",
+			"Your nature",
+			"Your fears",
+			"You need",
+			"Avoid",
+			"Embrace",
+			"You want",
+			"Your hopes",
+			"Your reality",
+			"Tomorrow",
+			"The future",
+		];
+		const loader = new THREE.FontLoader();
+		loader.load('fonts/Nova Round_Book.json', (font) => {
+			
+			// const matDark = new THREE.LineBasicMaterial({
+			// 	color: color,
+			// 	side: THREE.DoubleSide
+			// });
+
+			const matLite = new THREE.MeshNormalMaterial({
+				transparent: true,
+				// opacity: 0.4,
+				side: THREE.DoubleSide
+			});
+
+			strings.forEach((string, index) => {
+
+				const shapes = font.generateShapes(string, 0.15);
+				const geometry = new THREE.ShapeGeometry(shapes);
+				geometry.computeBoundingBox();
+				const xMid = - 0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+				geometry.translate(xMid, 0, 0);
+				const text = new THREE.Mesh(geometry, matLite);
+				if (index <= 1) {
+					text.rotation.z = Math.PI;
+				}
+				// text.position.z = - 150;
+				const mi = markerIndexes[index];
+				markers[mi].add(text);
+			});
+		});
 	}
 
 	function loadModels(callback) {
@@ -100,12 +147,13 @@ function ARScene(arScene, arController, renderCallback) {
 			markers.forEach(m => {
 				m.body.material = m.bodyMaterial;
 			});
+			addText();
 		};
 
 		// rotate markers?
 		markers.forEach((m, i) => {
 			m.group.rotation.y = Math.PI * 0.25;
-			m.group.position.z = 0.5;
+			m.group.position.z = 1;
 			m.group.position.y = -0.5;
 
 			if (m.code === 0 || m.code === 32) {
@@ -127,6 +175,15 @@ function ARScene(arScene, arController, renderCallback) {
 			'models/ch1_cat.glb',
 			'models/ch2_bird.glb',
 			'models/ch3_fish.glb',
+			'models/ch4_pig.glb',
+			'models/ch5_rabbit.glb',
+			'models/ch6_goat.glb',
+			'models/ch7_dog.glb',
+			'models/ch8_lizard.glb',
+			'models/ch9_rat.glb',
+			'models/ch10_ram.glb',
+			'models/ch11_owl.glb',
+			'models/ch12_mosquito.glb',
 		];
 		
 		models.forEach((url, index) => {
