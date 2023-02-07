@@ -14,10 +14,8 @@ function ARScene(arScene, arController, renderCallback) {
 	} else {
 		a = shuffle([0,1,2,3,4,5,6,7,8,9,10,11]);
 		const n = shuffle([2,3,4]);
-		console.log(n);
 		b = shiftArray(a, n[0]);
 		c = shiftArray(b, n[1]);
-		console.log(a,b,c);
 		localStorage.setItem('chimera', JSON.stringify({ a: a, b: b, c: c }));
 	}
 	const markerIndexes = [0, 32, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12];
