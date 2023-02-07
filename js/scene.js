@@ -116,9 +116,9 @@ function ARScene(arScene, arController, renderCallback) {
 			// });
 
 			const matLite = new THREE.MeshNormalMaterial({
-				transparent: true,
+				// transparent: true,
 				// opacity: 0.4,
-				side: THREE.DoubleSide
+				// side: THREE.DoubleSide
 			});
 
 			strings.forEach((string, index) => {
