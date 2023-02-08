@@ -39,6 +39,13 @@ function ARScene(arScene, arController, renderCallback) {
 
 		arController.setPatternDetectionMode(artoolkit.AR_TEMPLATE_MATCHING_MONO_AND_MATRIX);
 
+		const loadHDRI = new THREE.RGBELoader().load('./textures/snow.hdr', texture => {
+			texture.mapping = THREE.EquirectangularReflectionMapping;
+			// texture.encoding = THREE.sRGBEncoding;
+			scene.environment = texture;
+			// scene.background = texture;
+		});
+
 		renderer = new THREE.WebGLRenderer({ 
 			antialias: false, 
 			alpha: true,
@@ -47,6 +54,9 @@ function ARScene(arScene, arController, renderCallback) {
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setClearColor(0x000000, 0);
 		renderer.autoClear = true;
+		renderer.outputEncoding = THREE.sRGBEncoding;
+		// renderer.toneMapping = THREE.ACESFilmicToneMapping;
+		// renderer.toneMappingExposure = 1;
 
 		if (arController.orientation === 'portrait') {
 			w = window.innerHeight;
@@ -84,9 +94,9 @@ function ARScene(arScene, arController, renderCallback) {
 
 		// lighting
 		// const light = new THREE.HemisphereLight(0xffffff, 0x080820, 1.5);
-		const light = new THREE.HemisphereLight(0xFEFCF0, 0x47464E, 1);
+		const light = new THREE.HemisphereLight(0xFEFCF0, 0x252429, 1);
 		// light.position.y = -10;
-		// light.position.z = 10;
+		light.position.x = 10;
 
 		scene.add(light);
 
@@ -99,14 +109,14 @@ function ARScene(arScene, arController, renderCallback) {
 		const strings = [
 			"The past",
 			"Today",
-			"Your nature",
-			"Your fears",
-			"You need",
+			"Nature",
+			"Fears",
+			"Require", // deprivation, loss, require, obstacle, darkness
 			"Avoid",
 			"Embrace",
-			"You want",
-			"Your hopes",
-			"Your reality",
+			"Desire", // condition, stipulation, desire, reward, light
+			"Hopes",
+			"Reality",
 			"Tomorrow",
 			"The future",
 		];
@@ -184,7 +194,6 @@ function ARScene(arScene, arController, renderCallback) {
 		});
 
 		loader.load('models/body.glb', gltf => {
-			console.log(gltf);
 			markers.forEach(m => {
 				const body = cloneGltf(gltf).scene.children[0];
 				m.body = body;
@@ -286,7 +295,7 @@ function ARScene(arScene, arController, renderCallback) {
 
 	function setupOutline() {
 		const effect = new THREE.OutlineEffect(renderer, {
-			defaultThickness: 0.0025,
+			defaultThickness: 0.004,
 			defaultColor: new THREE.Color( outlineColor ).toArray()
 		});
 
