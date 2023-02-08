@@ -6,7 +6,7 @@ function ARScene(arScene, arController, renderCallback) {
 
 	const stored = false; // localStorage.getItem('chimera');
 	let a, b, c;
-	if (false && stored) {
+	if (stored) {
 		const d = JSON.parse(stored);
 		a = d.a;
 		b = d.b;
@@ -110,12 +110,12 @@ function ARScene(arScene, arController, renderCallback) {
 			"The past",
 			"Today",
 			"Nature",
-			"Fears",
+			"Fear",
 			"Require", // deprivation, loss, require, obstacle, darkness
 			"Avoid",
 			"Embrace",
 			"Desire", // condition, stipulation, desire, reward, light
-			"Hopes",
+			"Hope",
 			"Reality",
 			"Tomorrow",
 			"The future",
