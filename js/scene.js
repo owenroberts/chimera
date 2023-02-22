@@ -4,7 +4,7 @@ function ARScene(arScene, arController, renderCallback) {
 	/* save user chimeric arc */
 	/* this could be recognizable pattern, go with it for now */
 
-	const stored = false; // localStorage.getItem('chimera');
+	const stored = localStorage.getItem('chimera');
 	let a, b, c;
 	if (stored) {
 		const d = JSON.parse(stored);
